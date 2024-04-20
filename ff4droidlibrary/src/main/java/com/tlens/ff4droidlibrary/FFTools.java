@@ -1,4 +1,4 @@
-package com.tlens.ffmpeg4droid;
+package com.tlens.ff4droidlibrary;
 
 import androidx.annotation.NonNull;
 
@@ -11,7 +11,7 @@ public class FFTools {
     };
 
     static {
-        System.loadLibrary("ffmpeg4droid");
+        System.loadLibrary("ff4droidlibrary");
     }
 
     public static void onMsgCallback(String msg, int level) {

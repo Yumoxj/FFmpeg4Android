@@ -1,4 +1,4 @@
-package com.tlens.ffmpeg4droid;
+package com.tlens.ff4droidlibrary;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.tlens.ffmpeg4droid.test", appContext.getPackageName());
+        assertEquals("com.tlens.ff4droidlibrary.test", appContext.getPackageName());
     }
 }

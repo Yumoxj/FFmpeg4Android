@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tlens.ffmpeg4droid"
+    namespace = "com.tlens.ff4droidlibrary"
     compileSdk = 34
 
     defaultConfig {

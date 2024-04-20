@@ -11,6 +11,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tlens.ff4droidlibrary.FFTools;
+import com.tlens.ff4droidlibrary.PermissionsActivity;
+
 public class MainActivity extends AppCompatActivity {
     private EditText editText;
     private Button buttonStart;

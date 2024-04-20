@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "FFmpeg4Droid"
 include(":demo")
-include(":ffmpeg4droid")
+include(":ff4droidlibrary")

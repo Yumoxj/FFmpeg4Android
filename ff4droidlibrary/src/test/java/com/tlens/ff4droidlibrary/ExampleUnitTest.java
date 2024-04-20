@@ -1,4 +1,4 @@
-package com.tlens.ffmpeg4droid;
+package com.tlens.ff4droidlibrary;
 
 import org.junit.Test;
 

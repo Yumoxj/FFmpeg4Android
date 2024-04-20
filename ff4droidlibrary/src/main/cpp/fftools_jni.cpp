@@ -23,12 +23,12 @@ static void msg_callback(const char *msg, int level);
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_tlens_ffmpeg4droid_FFTools_init(JNIEnv *env, jclass) {
+Java_com_tlens_ff4droidlibrary_FFTools_init(JNIEnv *env, jclass) {
     ff_env = env;
 
-    jclass clazz = ff_env->FindClass("com/tlens/ffmpeg4droid/FFTools");
+    jclass clazz = ff_env->FindClass("com/tlens/ff4droidlibrary/FFTools");
     if (clazz == NULL) {
-        LOGE("Cannot find class com/tlens/ffmpeg4droid/FFTools");
+        LOGE("Cannot find class com/tlens/ff4droidlibrary/FFTools");
         return;
     }
     ff_class = (jclass)env->NewGlobalRef(clazz);
@@ -36,7 +36,7 @@ Java_com_tlens_ffmpeg4droid_FFTools_init(JNIEnv *env, jclass) {
     ff_msg_methodID = ff_env->GetStaticMethodID(
             clazz, "onMsgCallback", "(Ljava/lang/String;I)V");
     if (ff_msg_methodID == NULL) {
-        LOGE("Cannot find method onMsgCallback in class com/tlens/ffmpeg4droid/FFTools");
+        LOGE("Cannot find method onMsgCallback in class com/tlens/ff4droidlibrary/FFTools");
         ff_env->DeleteLocalRef(clazz);
         return;
     }
@@ -51,7 +51,7 @@ Java_com_tlens_ffmpeg4droid_FFTools_init(JNIEnv *env, jclass) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_tlens_ffmpeg4droid_FFTools_deinit(JNIEnv *env, jclass ) {
+Java_com_tlens_ff4droidlibrary_FFTools_deinit(JNIEnv *env, jclass ) {
     if (ff_class != NULL) {
         env->DeleteGlobalRef(ff_class);
     }
@@ -60,13 +60,13 @@ Java_com_tlens_ffmpeg4droid_FFTools_deinit(JNIEnv *env, jclass ) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_tlens_ffmpeg4droid_FFTools_version(JNIEnv *env, jclass) {
+Java_com_tlens_ff4droidlibrary_FFTools_version(JNIEnv *env, jclass) {
     return env->NewStringUTF(fftools_ffmpeg_version());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_tlens_ffmpeg4droid_FFTools_ffmpeg(JNIEnv *env, jclass, jobjectArray commands) {
+Java_com_tlens_ff4droidlibrary_FFTools_ffmpeg(JNIEnv *env, jclass, jobjectArray commands) {
     int argc = env->GetArrayLength(commands);
     if (argc < 2) {
         msg_callback("invalid command", AV_LOG_WARNING);

@@ -38,7 +38,7 @@ android {
 
 dependencies {
 
-    implementation(project(":ffmpeg4droid"))
+    implementation(project(":ff4droidlibrary"))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
