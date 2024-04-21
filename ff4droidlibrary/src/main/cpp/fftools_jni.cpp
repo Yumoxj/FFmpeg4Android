@@ -97,7 +97,21 @@ Java_com_tlens_ff4droidlibrary_FFTools_ffmpeg(JNIEnv *env, jclass, jobjectArray 
     return result;
 }
 
+static bool starts_with(const char *str, const char *prefix) {
+    size_t prefix_len = strlen(prefix);
+    size_t str_len = strlen(str);
+
+    if (prefix_len > str_len) {
+        return false;
+    }
+
+    return strncmp(str, prefix, prefix_len) == 0;
+}
+
 static void msg_callback(const char *msg, int level) {
+    if (msg == NULL)
+        return;
+
     switch (level)
     {
         case AV_LOG_FATAL:
@@ -122,7 +136,15 @@ static void msg_callback(const char *msg, int level) {
             break;
     }
 
-    jstring jmsg = ff_env->NewStringUTF(msg);
-    ff_env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
-    ff_env->DeleteLocalRef(jmsg);
+    bool help_msg = false;
+    if (starts_with(msg, "show_help")) {
+        help_msg = true;
+        msg = msg + strlen("show_help");
+    }
+
+    if (ff_env && ff_class && (level < AV_LOG_INFO || help_msg)) {
+        jstring jmsg = ff_env->NewStringUTF(msg);
+        ff_env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
+        ff_env->DeleteLocalRef(jmsg);
+    }
 }

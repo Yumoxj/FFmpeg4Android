@@ -45,8 +45,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PermissionsActivity.class);
             startActivity(intent);
 
-            textView.setText("");
-
             if (isRunning) {
                 Toast toast = Toast.makeText(MainActivity.this,
                         "The ffmpeg program is busy,\nplease try again later.",
