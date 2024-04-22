@@ -21,6 +21,14 @@ static jmethodID ff_msg_methodID;
 
 static void msg_callback(const char *msg, int level);
 
+static void post_msg(const char *msg, int level, bool is_help_msg) {
+    if (ff_env && ff_class && (level < AV_LOG_INFO || is_help_msg)) {
+        jstring jmsg = ff_env->NewStringUTF(msg);
+        ff_env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
+        ff_env->DeleteLocalRef(jmsg);
+    }
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_tlens_ff4droidlibrary_FFTools_init(JNIEnv *env, jclass) {
@@ -88,7 +96,13 @@ Java_com_tlens_ff4droidlibrary_FFTools_ffmpeg(JNIEnv *env, jclass, jobjectArray 
         env->ReleaseStringUTFChars(jstr, temp);
     }
 
+    post_msg("++++++++++++++++++++++++", AV_LOG_INFO, true);
+    post_msg("ffmpeg begin", AV_LOG_INFO, true);
     result = fftools_ffmpeg(argc, argv);
+    char result_msg[128];
+    sprintf(result_msg,"ffmpeg end, result=%d", result);
+    post_msg(result_msg, AV_LOG_INFO, true);
+    post_msg("------------------------", AV_LOG_INFO, true);
 
     for (int i = 0; i < argc; i++) {
         free(argv[i]);
@@ -141,10 +155,5 @@ static void msg_callback(const char *msg, int level) {
         help_msg = true;
         msg = msg + strlen("show_help");
     }
-
-    if (ff_env && ff_class && (level < AV_LOG_INFO || help_msg)) {
-        jstring jmsg = ff_env->NewStringUTF(msg);
-        ff_env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
-        ff_env->DeleteLocalRef(jmsg);
-    }
+    post_msg(msg, level, help_msg);
 }
