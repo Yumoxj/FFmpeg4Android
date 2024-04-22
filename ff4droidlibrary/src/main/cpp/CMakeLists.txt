@@ -43,7 +43,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_AV_CONFIG_H")
 
 set(jniLibs_path ${CMAKE_SOURCE_DIR}/src/main/cpp/jniLibs/${CMAKE_ANDROID_ARCH_ABI})
 
-set(ffmpeg_libs avcodec avfilter avformat avutil swresample swscale fftools avdevice)
+set(ffmpeg_libs avcodec avfilter avformat avutil
+                swresample swscale fftools avdevice
+                postproc openh264)
 foreach(lib ${ffmpeg_libs})
     add_library(${lib} SHARED IMPORTED)
     set_target_properties(${lib}
