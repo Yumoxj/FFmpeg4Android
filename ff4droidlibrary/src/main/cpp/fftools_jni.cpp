@@ -14,47 +14,117 @@ extern "C" {
 
 #define FFTOOLS_TAG "fftools"
 #include "fftools_log.h"
+#include "pthread.h"
 
-static JNIEnv *ff_env;
+static JavaVM *ff_vm;
 static jclass ff_class;
 static jmethodID ff_msg_methodID;
+
+static pthread_key_t current_env;
+static pthread_once_t once = PTHREAD_ONCE_INIT;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+static void jni_detach_env(void *)
+{
+    if (ff_vm) {
+        ff_vm->DetachCurrentThread();
+    }
+}
+
+static void jni_create_pthread_key(void)
+{
+    pthread_key_create(&current_env, jni_detach_env);
+}
+
+static JNIEnv *get_current_env()
+{
+    int ret;
+    JNIEnv *env = NULL;
+
+    pthread_mutex_lock(&lock);
+
+    pthread_once(&once, jni_create_pthread_key);
+
+    if ((env = static_cast<JNIEnv *>(pthread_getspecific(current_env))) != NULL) {
+        goto done;
+    }
+
+    ret = ff_vm->GetEnv((void **)&env, JNI_VERSION_1_6);
+    switch(ret) {
+        case JNI_EDETACHED:
+            if (ff_vm->AttachCurrentThread(&env, NULL) != 0) {
+                LOGE("Failed to attach the JNI environment to the current thread");
+                env = NULL;
+            } else {
+                pthread_setspecific(current_env, env);
+            }
+            break;
+        case JNI_OK:
+            break;
+        case JNI_EVERSION:
+            LOGE("The specified JNI version is not supported");
+            break;
+        default:
+            LOGE("Failed to get the JNI environment attached to this thread");
+            break;
+    }
+
+done:
+    pthread_mutex_unlock(&lock);
+    return env;
+}
 
 static void msg_callback(const char *msg, int level);
 
 static void post_msg(const char *msg, int level, bool is_help_msg) {
-    if (ff_env && ff_class && (level ==AV_LOG_ERROR || is_help_msg)) {
-        jstring jmsg = ff_env->NewStringUTF(msg);
-        ff_env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
-        ff_env->DeleteLocalRef(jmsg);
+    JNIEnv *env = get_current_env();
+
+    if (env && ff_class && (level <= AV_LOG_INFO || is_help_msg)) {
+        jstring jmsg = env->NewStringUTF(msg);
+        if (jmsg) {
+            env->CallStaticVoidMethod(ff_class, ff_msg_methodID, jmsg, level);
+            env->DeleteLocalRef(jmsg);
+        } else {
+            LOGE("failed to post the msg '%s'", msg);
+        }
     }
+}
+
+extern "C"
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
+    JNIEnv *env;
+    if (vm->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+    ff_vm = vm;
+    return JNI_VERSION_1_6;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_tlens_ff4droidlibrary_FFTools_init(JNIEnv *env, jclass) {
-    ff_env = env;
+    env = env;
 
-    jclass clazz = ff_env->FindClass("com/tlens/ff4droidlibrary/FFTools");
+    jclass clazz = env->FindClass("com/tlens/ff4droidlibrary/FFTools");
     if (clazz == NULL) {
         LOGE("Cannot find class com/tlens/ff4droidlibrary/FFTools");
         return;
     }
     ff_class = (jclass)env->NewGlobalRef(clazz);
 
-    ff_msg_methodID = ff_env->GetStaticMethodID(
+    ff_msg_methodID = env->GetStaticMethodID(
             clazz, "onMsgCallback", "(Ljava/lang/String;I)V");
     if (ff_msg_methodID == NULL) {
         LOGE("Cannot find method onMsgCallback in class com/tlens/ff4droidlibrary/FFTools");
-        ff_env->DeleteLocalRef(clazz);
+        env->DeleteLocalRef(clazz);
         return;
     }
 
     fftools_init(NULL);
     fftools_set_msg_callback(msg_callback);
+    fftools_jni_set_java_vm(ff_vm, NULL);
 
-    JavaVM *vm;
-    env->GetJavaVM(&vm);
-    fftools_jni_set_java_vm(vm, NULL);
+    env->DeleteLocalRef(clazz);
 }
 
 extern "C"

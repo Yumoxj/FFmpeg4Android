@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     String strCmd = editText.getText().toString();
                     if (TextUtils.isEmpty(strCmd)) {
                         strCmd = "ffmpeg -h";
-                        // strCmd = "ffmpeg -i /sdcard/video.mp4 /sdcard/video.yuv";
+                        // strCmd = "ffmpeg -c:v libopenh264 -i /sdcard/video_h264.mp4 /sdcard/video_h264.yuv";
                     }
                     String[] commands = strCmd.split(" ");
                     FFTools.ffmpeg(commands);
